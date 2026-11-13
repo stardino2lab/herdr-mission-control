@@ -29,19 +29,19 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - **Prompt**: Enter or ⏎ sends the line to the target with `hc send`. Line breaks and tabs become spaces; control characters are dropped. Not sent while the target waits on a dialog (it would answer the dialog).
 - **Language button**: steps to the next language in the list and back to the first; every string switches, and what was typed carries over. Its tooltip names the current and the next language. Saved in `shared("mission-control.lang")`. Until picked, the language follows the system locale (`Intl`): the locale's first part (`pt` of `pt-BR`) when there is a table for it, English otherwise. Key names (Enter, Esc) and the dialog's own "Yes" are never translated.
 - **Group header**: click folds the group.
-- **Auto-approve switch**: off at every start, never saved. While on, every 2 seconds it looks at each waiting agent on reachable machines:
+- **Auto-approve switch**: off at every start, never saved. It is driven by Herdr's changes, not by a clock: Herdr re-renders the mod when an agent starts or stops waiting, and `render(cx)` starts the work, so nothing runs while it is off or nobody waits. While on, for each waiting agent on reachable machines:
   1. reads the terminal's screen;
   2. reads the dialog off it (header, question, answers, cursor on "1. Yes", not cut short);
   3. judges it; anything not fully read, a fetch or tool call, over 4000 characters or 80 lines, invisible characters, or a danger rule match is held;
   4. reads the screen again and holds unless the same dialog is still there;
   5. holds unless the agent still waits and the switch is still on;
   6. presses Enter.
-  At most 10 approvals a minute. A dialog still there after its Enter is not pressed twice. A held dialog is looked at again every 10 seconds. A hold caused by a danger rule posts one warning toast that focuses the agent when clicked.
+  At most 10 approvals a minute. A dialog still there after its Enter is not pressed twice. While a dialog is held, one `cx.timer.after` looks at it again 10 seconds after the last attempt ended (a new question can replace the old one without the status changing); it is set again only if someone still waits. A hold caused by a danger rule posts one warning toast that focuses the agent when clicked.
 
 ## Built from
 
 - A mod only: `mods/mission-control/`. No layout of its own. `mod.json`: `{ "place": "right", "size": 320, "title": "Mission Control", "overlay": { "width": 380, "height": 560 } }`.
-- `main.js`: the `View`. State, the 2s timer (`cx.timer.every`), wiring.
+- `main.js`: the `View`. State and wiring. No repeating timer: `render(cx)` calls `wake(cx)`, which starts an attempt (`cx.spawn`) for each waiting agent that is due.
 - `tree.js`: pure. `buildGroups(agents(), terminals(), machines())` groups by machine (the `machine/` prefix of an address), builds the sub-agent tree from `parent`, sorts by urgency.
 - `control.js`: pure. Builds `hc` argument lists (`keys -- <t> enter|esc`, `send -- <t> <text>`, `read -- <t>`), cleans a prompt, reads `hc`'s result (its JSON `{"error":{"message"}}` counts as failure).
 - `detector.js`: pure. `parseDialog(app, screen)` reads an approval dialog; specs per `AgentInfo.app` (`claude-code`, `codex`).
@@ -51,7 +51,7 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - `herdr` functions: `agents`, `terminals`, `machines`, `spaces`, `theme`, `run`, `hc`, `notify`, `shared`, `setShared`. Commands: `pane.focus {pane}`, `terminal.peek {terminal}`.
 - Programs it runs: `hc` only, through `hc()`. No `exec`, no `fetch`, no files read or written.
 - Art: none of its own; program icons come from `AgentInfo.program`.
-- Tests (plain node, outside the mod folder): `npm test`, 78 tests, with two screens captured from Claude Code 2.1.322.
+- Tests (plain node, outside the mod folder): `npm test`, 66 tests, with two screens captured from Claude Code 2.1.322.
 
 ## Watch out
 
@@ -74,7 +74,7 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 
 ## Done when
 
-- `herdr-app check mods/mission-control` passes and `npm test` reports 78 passing.
+- `herdr-app check mods/mission-control` passes and `npm test` reports 66 passing.
 - With Claude Code running in a tab, its row shows with the right status as it works, waits and finishes.
 - On a waiting row, ✓ closes the dialog and the command runs; ✗ closes it and nothing runs.
 - A line typed in the prompt bar arrives in the target agent; while it waits on a dialog the line is refused with a message.

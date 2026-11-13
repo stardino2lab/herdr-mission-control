@@ -166,3 +166,48 @@ test("a dialog still there after its approval is not approved twice", async () =
   assert.equal(t.finish("t1", 2, third), null);
   assert.equal(x.pressed.length, 1);
 });
+
+test("attempts side by side still keep to the limit", async () => {
+  const limit = new RateLimit(2, 60000);
+  const pressed = [];
+  const make = () => ({
+    read: async () => screen("mkdir build"),
+    press: async (address) => {
+      pressed.push(address);
+      return { ok: true, message: "" };
+    },
+    asks: async () => true,
+    limit,
+    now: () => 1000,
+  });
+  const results = await Promise.all(["t1", "t2", "t3", "t4", "t5"].map((t) => attempt(t, "claude-code", make())));
+  assert.equal(pressed.length, 2);
+  assert.deepEqual(results.map((r) => r.reason).sort(), ["ok", "ok", "rate", "rate", "rate"]);
+});
+
+test("asks may be a promise; an error or anything but true holds", async () => {
+  for (const [asks, want] of [[async () => true, "approved"], [() => true, "approved"], [async () => false, "held"], [() => "yes", "held"], [async () => { throw new Error("x"); }, "held"]]) {
+    const r = await attempt("t1", "claude-code", { read: async () => screen("mkdir build"), press: async () => ({ ok: true, message: "" }), asks, limit: new RateLimit(), now: () => 1 });
+    assert.equal(r.action, want);
+  }
+});
+
+test("Tracker.idle: true only when no attempt is running", () => {
+  const t = new Tracker(10000);
+  assert.equal(t.idle(), true);
+  t.start("t1");
+  t.start("t2");
+  assert.equal(t.idle(), false);
+  t.finish("t1", 1, { action: "held", signature: "a" });
+  assert.equal(t.idle(), false);
+  t.finish("t2", 1, { action: "held", signature: "b" });
+  assert.equal(t.idle(), true);
+});
+
+test("a held dialog is due again exactly when the look-again fires", () => {
+  const t = new Tracker(10000);
+  t.start("t1");
+  t.finish("t1", 5000, { action: "held", signature: "a" });
+  assert.equal(t.due("t1", 5000 + 9999), false);
+  assert.equal(t.due("t1", 5000 + 10250), true);
+});

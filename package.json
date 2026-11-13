@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/tree.test.mjs test/control.test.mjs test/safety.test.mjs test/detector.test.mjs test/auto.test.mjs"
+    "test": "node --test test/tree.test.mjs test/control.test.mjs test/safety.test.mjs test/detector.test.mjs test/auto.test.mjs test/strings.test.mjs"
   },
   "license": "MIT",
   "description": "Herdr mod: a control tower for coding agents"

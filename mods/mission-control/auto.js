@@ -31,7 +31,7 @@ export class RateLimit {
  * question, and the key must not answer that one.
  *
  * @param io { read(address): Promise<string>, press(address, app): Promise<{ok, message}>,
- *             asks(address): boolean, limit: RateLimit, now(): number,
+ *             asks(address): boolean | Promise<boolean>, limit: RateLimit, now(): number,
  *             stuck?(address, signature): boolean }
  * @returns {{ action: "approved" | "held" | "failed", reason: string, rule: string | null,
  *            signature: string | null, command: string | null }}
@@ -58,8 +58,17 @@ export async function attempt(address, app, io) {
     return out("held", "read-failed", first);
   }
   if (!again.complete || again.signature !== first.signature) return out("held", "changed", first);
-  if (!io.asks(address)) return out("held", "not-blocked", first);
+  // `asks` may answer at once or after asking again (a promise); anything but a
+  // plain yes, an error included, holds.
+  let asks = false;
+  try {
+    asks = (await io.asks(address)) === true;
+  } catch (e) {}
+  if (!asks) return out("held", "not-blocked", first);
 
+  // Asked again here, with nothing awaited before the count: attempts for several
+  // agents run side by side, and all of them saw room at the first check.
+  if (!io.limit.open(io.now())) return out("held", "rate", first);
   io.limit.count(io.now());
   let pressed;
   try {
@@ -103,6 +112,11 @@ export class Tracker {
 
   start(address) {
     this.running.add(address);
+  }
+
+  /** No attempt is running. */
+  idle() {
+    return this.running.size === 0;
   }
 
   /**

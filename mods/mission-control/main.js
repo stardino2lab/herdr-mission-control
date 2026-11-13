@@ -11,9 +11,12 @@ import { lang, upcomingLang, setLang, tr, trIn } from "./i18n.js";
 import { LANGS } from "./strings.js";
 import { topBar, groupHeader, agentRow, subRow, note, promptBar, logBar } from "./ui.js";
 
-// Auto-approve: how often it looks, how much of the screen it reads, and how
-// many approvals a minute it may give across all agents.
-const TICK_MS = 2000;
+// Auto-approve is driven by Herdr's own changes, not by a clock: Herdr re-renders
+// this mod when an agent starts or stops waiting, and render() starts the work.
+// Nothing runs while it is off or nobody waits. The one timer is a single
+// look-again, set only while a dialog is being held (a new question can replace
+// the old one without the agent's status changing).
+const RECHECK_MS = 10000;
 // The screen only, no history. An agent's dialog is drawn on its screen, and a
 // dialog too tall for it has no header in view, which is held. Asking hc 0.1.16
 // for history of a full-screen program (`--lines N`) never returns.
@@ -33,12 +36,12 @@ export default class MissionControl extends View {
   init(_props, cx) {
     // Off on every start, never saved: pressing keys by itself is opted into each time.
     this.auto = false;
-    this.tracker = new Tracker();
+    this.tracker = new Tracker(RECHECK_MS);
+    this.recheck = false; // a look-again is set
     this.limit = new RateLimit(PER_MINUTE, 60000);
     this.log = []; // newest first: { at, address, action, reason, rule, command }
     this.logOpen = false;
     this.waiting = []; // rows waiting on a dialog, on machines that can be reached
-    cx.timer.every(TICK_MS, (cx) => this.tick(cx));
     this.folded = new Set();
     this.busy = new Set(); // addresses with an action on its way
     this.picked = null; // the row the prompt goes to
@@ -101,15 +104,18 @@ export default class MissionControl extends View {
   toggleAuto(cx) {
     this.auto = !this.auto;
     this.tracker.clear();
-    if (this.auto) this.tick(cx);
+    // The redraw starts the work: render() calls wake().
     cx.notify();
   }
 
   // Looks at each waiting agent that is due, one attempt per agent at a time.
-  tick(cx) {
+  // Called from render(), so it runs whenever Herdr reports a change, and from
+  // the look-again.
+  wake(cx) {
     if (!this.auto) return;
     const rows = this.waiting;
     this.tracker.prune(rows.map((r) => r.address));
+    if (rows.length === 0) return;
     const io = {
       read: async (address) => {
         const r = await hc(readArgs(address, READ_LINES));
@@ -135,6 +141,21 @@ export default class MissionControl extends View {
         cx.notify();
       });
     }
+    this.lookAgain(cx);
+  }
+
+  // One look-again, set once every attempt has ended and someone still waits:
+  // a dialog that was held, or one whose key did nothing. Not set again until
+  // it fires, and it does nothing if auto-approve was turned off meanwhile.
+  lookAgain(cx) {
+    if (this.recheck || !this.tracker.idle()) return;
+    this.recheck = true;
+    cx.timer.after(RECHECK_MS + 250, (cx) => {
+      this.recheck = false;
+      if (!this.auto || this.waiting.length === 0) return;
+      this.wake(cx);
+      cx.notify();
+    });
   }
 
   record(row, result) {
@@ -192,7 +213,7 @@ export default class MissionControl extends View {
     return [a.space_name, tab].filter(Boolean).join(" · ") || a.title || a.address;
   }
 
-  render() {
+  render(cx) {
     const t = theme();
     const groups = buildGroups(agents(), terminals(), machines());
     const sum = totals(groups);
@@ -208,6 +229,8 @@ export default class MissionControl extends View {
       ...(a.status === "blocked" ? [{ address: a.address, app: a.app, pane: a.pane }] : []),
       ...subs.filter((s) => s.asks).map((s) => ({ address: s.t.address, app: s.t.report?.app ?? s.t.app, pane: null })),
     ]));
+    // Herdr just told us something changed (or auto-approve was switched on).
+    this.wake(cx);
     const targeted = this.target?.address;
 
     const pick = (address) => (_e, cx) => {
