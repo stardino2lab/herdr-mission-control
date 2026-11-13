@@ -47,3 +47,9 @@ test("language labels are short and all different", () => {
   assert.equal(hasLang("toString"), false);
   assert.equal(hasLang("constructor"), false);
 });
+
+test("status words stay short enough for a 320px row", () => {
+  for (const { id } of LANGS) {
+    for (const key of ["working", "blocked", "done", "idle"]) assert.ok([...STR[id][key]].length <= 14, `${id}.${key}: ${STR[id][key]}`);
+  }
+});

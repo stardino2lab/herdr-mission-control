@@ -98,7 +98,16 @@ export function logBar(t, log, open, onToggle) {
 
 /** The top bar: title, how many need the person, auto-approve, the language switch. */
 export function topBar(t, sum, auto, onAuto, onLang) {
-  const chip = (status) => div().flex_none().text_size(11).text_color(t[status] ?? t.dim).child(`${tr(status)} ${sum[status]}`);
+  // A dot and a number: the words differ a lot in length between languages
+  // ("Braucht Freigabe"), and the bar must always have room for its two buttons.
+  // The words are in the tooltip and in each group's header.
+  const chip = (status) => div()
+    .id(`mc-sum-${status}`)
+    .flex_none()
+    .text_size(11)
+    .text_color(t[status] ?? t.dim)
+    .tooltip(`${tr(status)} ${sum[status]}`)
+    .child(`● ${sum[status]}`);
   return h_flex()
     .px(12)
     .h(36)
@@ -107,10 +116,11 @@ export function topBar(t, sum, auto, onAuto, onLang) {
     .items_center()
     .border_b(1)
     .border_color(t.border)
-    .child(div().text_size(12).font_semibold().text_color(t.foreground).child(tr("title")))
+    // The title gives way first: it shrinks and is cut with an ellipsis.
+    .child(div().min_w(0).truncate().text_size(12).font_semibold().text_color(t.foreground).child(tr("title")))
     .when(sum.blocked > 0, (el) => el.child(chip("blocked")))
     .when(sum.working > 0, (el) => el.child(chip("working")))
-    .child(div().flex_1())
+    .child(div().flex_1().min_w(0))
     .child(autoSwitch(t, auto, onAuto))
     .child(
       div()

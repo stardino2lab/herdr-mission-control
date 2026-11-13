@@ -8,7 +8,7 @@ A right-hand panel that lists every coding agent on every machine as a one-line 
 
 A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left edge, 13px text. Top to bottom:
 
-- **Top bar**, 36px, 1px `border` below. Left: the title ("관제탑" / "Mission Control"), 12px semibold. Then, only when above zero, "승인대기 N" in `blocked` and "실행 N" in `working`, 11px. Right: the auto-approve switch (a 20px pill: a 7px ring and "자동승인" in `muted` while off; a filled dot, `blocked` text, `blocked` border and a 15% `blocked` fill while on), then the language button (a 20px pill reading the current language's short label: EN, 한, 日, 中, ES, DE, FR, PT).
+- **Top bar**, 36px, 1px `border` below. Left: the title ("Mission Control"), 12px semibold; it is the part that gives way, cut with an ellipsis when the bar is too narrow. Then, only when above zero, "● N" in `blocked` and "● N" in `working`, 11px, with the words ("Needs approval 1") in the tooltip: the words are much longer in some languages, and the two buttons on the right must always fit in 320px. Right: the auto-approve switch (a 20px pill: a 7px ring and "자동승인" in `muted` while off; a filled dot, `blocked` text, `blocked` border and a 15% `blocked` fill while on), then the language button (a 20px pill reading the current language's short label: EN, 한, 日, 中, ES, DE, FR, PT).
 - **List**, fills the rest and scrolls. One group per machine: this computer first, then machines by name. A group header is 28px: a fold mark (▾ / ▸), the machine's name ("이 컴퓨터" for this one), "연결 중" or "연결 끊김" when its layout is not ready (the latter in `blocked`), the group's waiting count, and its agent count. With one machine only, the header is left out. A machine with no agents shows "에이전트 없음".
 - **Agent row**, 28px, 7px corners: the program's icon (15px), its name (up to 96px), "space · tab" in `dim` 11.5px (the tab only if someone named it), the status, then buttons. A 2px left edge in `accent` marks the row the prompt goes to. The focused agent's row has the `selected` background. Rows of a machine that can't be reached are at 55% opacity.
 - **Sub-agent row**, 24px, under its parent: tree guides (`├`, `└`, `│`) in `input`, a 13px icon, its name in `muted` 12px, status, buttons.
@@ -51,7 +51,7 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - `herdr` functions: `agents`, `terminals`, `machines`, `spaces`, `theme`, `run`, `hc`, `notify`, `shared`, `setShared`. Commands: `pane.focus {pane}`, `terminal.peek {terminal}`.
 - Programs it runs: `hc` only, through `hc()`. No `exec`, no `fetch`, no files read or written.
 - Art: none of its own; program icons come from `AgentInfo.program`.
-- Tests (plain node, outside the mod folder): `npm test`, 66 tests, with two screens captured from Claude Code 2.1.322.
+- Tests (plain node, outside the mod folder): `npm test`, 67 tests, with two screens captured from Claude Code 2.1.322.
 
 ## Watch out
 
@@ -69,12 +69,13 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - A placeholder is fixed when an `InputState` is made, and `InputState.new` can't run during render: make one input per language in `init()`.
 - The translations other than English and Korean were not checked by native speakers.
 - `herdr-app shot` returns the last drawn frame; with the window behind others it can be minutes old.
+- Keep each status word to 14 characters or fewer in every language, or the row's buttons are pushed off the edge (a test checks this).
 - **Not checked yet**: Codex's dialog (written from memory), agy (no spec, always held), agents on another machine.
 - Codex and other agents answer with Enter / Esc by default; set their keys in `control.js` once confirmed.
 
 ## Done when
 
-- `herdr-app check mods/mission-control` passes and `npm test` reports 66 passing.
+- `herdr-app check mods/mission-control` passes and `npm test` reports 67 passing.
 - With Claude Code running in a tab, its row shows with the right status as it works, waits and finishes.
 - On a waiting row, ✓ closes the dialog and the command runs; ✗ closes it and nothing runs.
 - A line typed in the prompt bar arrives in the target agent; while it waits on a dialog the line is refused with a message.
