@@ -7,7 +7,8 @@ import { agents, terminals, machines, spaces, run, hc, notify, theme } from "her
 import { buildGroups, totals } from "./tree.js";
 import { approveArgs, denyArgs, sendArgs, readArgs, cleanPrompt, canSend, outcome, pickTarget } from "./control.js";
 import { attempt, RateLimit, Tracker } from "./auto.js";
-import { lang, toggleLang, tr, trIn } from "./i18n.js";
+import { lang, upcomingLang, setLang, tr, trIn } from "./i18n.js";
+import { LANGS } from "./strings.js";
 import { topBar, groupHeader, agentRow, subRow, note, promptBar, logBar } from "./ui.js";
 
 // Auto-approve: how often it looks, how much of the screen it reads, and how
@@ -44,8 +45,9 @@ export default class MissionControl extends View {
     this.last = null; // { address, ok, key, detail }: what the last action did
     this.text = "";
     this.inputFocused = false;
-    // A placeholder is fixed when its input is made, so each language has one.
-    this.inputs = { ko: this.makeInput("ko"), en: this.makeInput("en") };
+    // A placeholder is fixed when its input is made, and an input can't be made while
+    // drawing, so every language gets its own here.
+    this.inputs = Object.fromEntries(LANGS.map((l) => [l.id, this.makeInput(l.id)]));
   }
 
   makeInput(language) {
@@ -66,11 +68,11 @@ export default class MissionControl extends View {
     return input;
   }
 
-  // Switches language, carrying what was typed over to the other language's input.
+  // Steps to the next language, carrying what was typed over to that language's input.
   switchLang() {
-    const next = lang() === "ko" ? "en" : "ko";
+    const next = upcomingLang();
     this.inputs[next].set_value(this.text);
-    toggleLang();
+    setLang(next);
   }
 
   say(address, ok, key, detail = "") {

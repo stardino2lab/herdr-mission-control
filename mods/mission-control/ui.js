@@ -2,7 +2,7 @@
 
 import { div, image, svg } from "gpui-kit";
 import { h_flex, v_flex, Input } from "gpui-base";
-import { tr, lang } from "./i18n.js";
+import { tr, langButton } from "./i18n.js";
 
 const SPIN = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -127,9 +127,9 @@ export function topBar(t, sum, auto, onAuto, onLang) {
         .text_color(t.muted)
         .cursor_pointer()
         .hover((s) => s.bg(t.hover).text_color(t.foreground))
-        .tooltip(tr("lang"))
+        .tooltip(langButton().tip)
         .on_click(onLang)
-        .child(lang() === "ko" ? "한" : "EN"),
+        .child(langButton().label),
     );
 }
 

@@ -1,6 +1,6 @@
 # Mission Control
 
-A right-hand panel that lists every coding agent on every machine as a one-line tree, most urgent first. Each row jumps to its agent; a row waiting on an approval dialog gets approve and deny buttons. A one-line box at the bottom sends a prompt to the chosen agent. An opt-in switch approves dialogs by itself when the whole dialog could be read and nothing in it matches a danger rule. English and Korean: English by default, Korean on a Korean system, switchable.
+A right-hand panel that lists every coding agent on every machine as a one-line tree, most urgent first. Each row jumps to its agent; a row waiting on an approval dialog gets approve and deny buttons. A one-line box at the bottom sends a prompt to the chosen agent. An opt-in switch approves dialogs by itself when the whole dialog could be read and nothing in it matches a danger rule. Eight languages (English, 한국어, 日本語, 简体中文, Español, Deutsch, Français, Português): the system's language when there is a table for it, English otherwise, switchable.
 
 ![Mission Control](preview.png)
 
@@ -8,7 +8,7 @@ A right-hand panel that lists every coding agent on every machine as a one-line 
 
 A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left edge, 13px text. Top to bottom:
 
-- **Top bar**, 36px, 1px `border` below. Left: the title ("관제탑" / "Mission Control"), 12px semibold. Then, only when above zero, "승인대기 N" in `blocked` and "실행 N" in `working`, 11px. Right: the auto-approve switch (a 20px pill: a 7px ring and "자동승인" in `muted` while off; a filled dot, `blocked` text, `blocked` border and a 15% `blocked` fill while on), then the language button (a 20px pill reading "한" or "EN").
+- **Top bar**, 36px, 1px `border` below. Left: the title ("관제탑" / "Mission Control"), 12px semibold. Then, only when above zero, "승인대기 N" in `blocked` and "실행 N" in `working`, 11px. Right: the auto-approve switch (a 20px pill: a 7px ring and "자동승인" in `muted` while off; a filled dot, `blocked` text, `blocked` border and a 15% `blocked` fill while on), then the language button (a 20px pill reading the current language's short label: EN, 한, 日, 中, ES, DE, FR, PT).
 - **List**, fills the rest and scrolls. One group per machine: this computer first, then machines by name. A group header is 28px: a fold mark (▾ / ▸), the machine's name ("이 컴퓨터" for this one), "연결 중" or "연결 끊김" when its layout is not ready (the latter in `blocked`), the group's waiting count, and its agent count. With one machine only, the header is left out. A machine with no agents shows "에이전트 없음".
 - **Agent row**, 28px, 7px corners: the program's icon (15px), its name (up to 96px), "space · tab" in `dim` 11.5px (the tab only if someone named it), the status, then buttons. A 2px left edge in `accent` marks the row the prompt goes to. The focused agent's row has the `selected` background. Rows of a machine that can't be reached are at 55% opacity.
 - **Sub-agent row**, 24px, under its parent: tree guides (`├`, `└`, `│`) in `input`, a 13px icon, its name in `muted` 12px, status, buttons.
@@ -27,7 +27,7 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - **↗**: focuses the agent's pane (`pane.focus`); on a sub-agent, peeks at it (`terminal.peek`).
 - **✓ / ✗**: first checks that the terminal still waits on a dialog; if not, sends nothing and says so. ✓ presses Enter, ✗ presses Esc. One action per terminal at a time.
 - **Prompt**: Enter or ⏎ sends the line to the target with `hc send`. Line breaks and tabs become spaces; control characters are dropped. Not sent while the target waits on a dialog (it would answer the dialog).
-- **Language button**: switches every string; what was typed carries over. Saved in `shared("mission-control.lang")`. Until picked, the language follows the system locale (`Intl`): Korean for `ko*`, English otherwise.
+- **Language button**: steps to the next language in the list and back to the first; every string switches, and what was typed carries over. Its tooltip names the current and the next language. Saved in `shared("mission-control.lang")`. Until picked, the language follows the system locale (`Intl`): the locale's first part (`pt` of `pt-BR`) when there is a table for it, English otherwise. Key names (Enter, Esc) and the dialog's own "Yes" are never translated.
 - **Group header**: click folds the group.
 - **Auto-approve switch**: off at every start, never saved. While on, every 2 seconds it looks at each waiting agent on reachable machines:
   1. reads the terminal's screen;
@@ -47,11 +47,11 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - `detector.js`: pure. `parseDialog(app, screen)` reads an approval dialog; specs per `AgentInfo.app` (`claude-code`, `codex`).
 - `safety.js`: pure. `judge(dialog)` gives approve or hold with a reason; 56 rules over deleting, elevation, git history, disks, permissions, power and services, indirect execution, publishing and infrastructure, Windows registry and accounts, and sensitive paths. Each command is tried as shown, with wrapped lines joined, and with quotes, backslashes and carets removed.
 - `auto.js`: pure. `attempt()` (the six steps above), `RateLimit`, `Tracker`.
-- `ui.js`: every element. `i18n.js`: both languages.
+- `ui.js`: every element. `strings.js`: pure; one table of 51 strings per language, the language list (`LANGS`), `pickLang(locale)`, `nextLang(id)`. `i18n.js`: which language is shown (`shared`).
 - `herdr` functions: `agents`, `terminals`, `machines`, `spaces`, `theme`, `run`, `hc`, `notify`, `shared`, `setShared`. Commands: `pane.focus {pane}`, `terminal.peek {terminal}`.
 - Programs it runs: `hc` only, through `hc()`. No `exec`, no `fetch`, no files read or written.
 - Art: none of its own; program icons come from `AgentInfo.program`.
-- Tests (plain node, outside the mod folder): `npm test`, 57 tests, with two screens captured from Claude Code 2.1.322.
+- Tests (plain node, outside the mod folder): `npm test`, 78 tests, with two screens captured from Claude Code 2.1.322.
 
 ## Watch out
 
@@ -66,17 +66,18 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - Strip only box-drawing characters from line edges, never ASCII `|` or `-`: a pipe at the end of a wrapped line is part of the command.
 - A rule written `rm\s+…\s-rf` never matches `rm -rf` (the one space is used up); use a lookahead after the command word.
 - The folder-trust dialog's default is "No, exit"; it has no "1. Yes" and must stay unanswered.
-- A placeholder is fixed when an `InputState` is made: keep one input per language.
+- A placeholder is fixed when an `InputState` is made, and `InputState.new` can't run during render: make one input per language in `init()`.
+- The translations other than English and Korean were not checked by native speakers.
 - `herdr-app shot` returns the last drawn frame; with the window behind others it can be minutes old.
 - **Not checked yet**: Codex's dialog (written from memory), agy (no spec, always held), agents on another machine.
 - Codex and other agents answer with Enter / Esc by default; set their keys in `control.js` once confirmed.
 
 ## Done when
 
-- `herdr-app check mods/mission-control` passes and `npm test` reports 57 passing.
+- `herdr-app check mods/mission-control` passes and `npm test` reports 78 passing.
 - With Claude Code running in a tab, its row shows with the right status as it works, waits and finishes.
 - On a waiting row, ✓ closes the dialog and the command runs; ✗ closes it and nothing runs.
 - A line typed in the prompt bar arrives in the target agent; while it waits on a dialog the line is refused with a message.
-- The language button switches every string between English and Korean, and the choice survives a restart.
+- The language button steps through all eight languages, switching every string each time, and the choice survives a restart.
 - With auto-approve on: `mkdir x` is approved without a click and logged; `rm -rf x` stays waiting, is logged as held by `rm-flags`, and a toast says so.
 - Turning auto-approve off stops it at once; after a restart it is off.

@@ -1,10 +1,20 @@
 # Mission Control — a Herdr mod
 
-A right-hand panel for [Herdr](https://herdr.dev): every coding agent on every machine as a one-line tree, with approve / deny buttons, a one-line prompt box, and an opt-in auto-approve that holds anything dangerous. English by default, Korean on a Korean system; one button switches.
+A right-hand panel for [Herdr](https://herdr.dev): every coding agent on every machine as a one-line tree, with approve / deny buttons, a one-line prompt box, and an opt-in auto-approve that holds anything dangerous. Eight languages (English, 한국어, 日本語, 简体中文, Español, Deutsch, Français, Português): it starts in your system's language when it has it, English otherwise, and one button steps through them.
 
-여러 AI 코딩 에이전트(Claude Code, Codex 등)를 한 패널에서 관제하는 Herdr mod. 상태 트리, 승인·거절 버튼, 한 줄 프롬프트 전송, 위험 명령을 걸러내는 자동승인(기본 꺼짐). 한/영 전환.
+여러 AI 코딩 에이전트(Claude Code, Codex 등)를 한 패널에서 관제하는 Herdr mod. 상태 트리, 승인·거절 버튼, 한 줄 프롬프트 전송, 위험 명령을 걸러내는 자동승인(기본 꺼짐). 8개 언어, 시스템 언어를 따르고 버튼으로 전환.
 
 ![Mission Control](preview.png)
+
+## Why this one
+
+- **One glance, every agent.** Claude Code, Codex and friends on every machine, as a one-line tree, most urgent first. Sub-agents nest under their parent.
+- **Approve without leaving your seat.** A waiting dialog gets ✓ / ✗ buttons. Before it sends a key it re-checks that the dialog is still there.
+- **Auto-approve that holds the line.** Off by default and never saved. It only approves a dialog it read completely, and holds anything matching a danger rule, plus fetches, tool calls, oversized dialogs and hidden characters. It reads the screen twice, rate-limits to 10 a minute, and warns you when it holds.
+- **Talk to any agent.** A one-line prompt box sends to the chosen agent, and refuses while that agent waits on a dialog so it can't answer it by accident.
+- **Multi-machine.** Remote machines get their own groups, with connecting / disconnected states.
+- **Eight languages.** English, 한국어, 日本語, 简体中文, Español, Deutsch, Français, Português. Follows your system language, one button to switch.
+- **Tested.** Unit tests for the tree, the danger rules, the dialog reader and auto-approve, plus real Claude Code screen fixtures.
 
 ## Requirements
 
