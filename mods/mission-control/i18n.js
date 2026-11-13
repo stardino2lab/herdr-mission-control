@@ -1,4 +1,5 @@
-// Korean / English strings. The choice is shared so every copy of the mod follows it.
+// English / Korean strings. The choice is shared so every copy of the mod follows it.
+// Another language is one more table in STR with the same keys.
 
 import { shared, setShared } from "herdr";
 
@@ -113,7 +114,20 @@ const STR = {
   },
 };
 
-export const lang = () => (shared(KEY) === "en" ? "en" : "ko");
+// Until the person picks one: Korean on a Korean system, English everywhere else.
+function systemLang() {
+  try {
+    const locale = Intl.DateTimeFormat().resolvedOptions().locale ?? "";
+    return locale.toLowerCase().startsWith("ko") ? "ko" : "en";
+  } catch {
+    return "en";
+  }
+}
+
+export const lang = () => {
+  const picked = shared(KEY);
+  return picked in STR ? picked : systemLang();
+};
 export const toggleLang = () => setShared(KEY, lang() === "ko" ? "en" : "ko");
 /** A string in a given language, whatever is shown now. */
 export const trIn = (language, key) => STR[language]?.[key] ?? key;

@@ -1,6 +1,6 @@
 # Mission Control — a Herdr mod
 
-A right-hand panel for [Herdr](https://herdr.dev): every coding agent on every machine as a one-line tree, with approve / deny buttons, a one-line prompt box, and an opt-in auto-approve that holds anything dangerous. Korean and English.
+A right-hand panel for [Herdr](https://herdr.dev): every coding agent on every machine as a one-line tree, with approve / deny buttons, a one-line prompt box, and an opt-in auto-approve that holds anything dangerous. English by default, Korean on a Korean system; one button switches.
 
 여러 AI 코딩 에이전트(Claude Code, Codex 등)를 한 패널에서 관제하는 Herdr mod. 상태 트리, 승인·거절 버튼, 한 줄 프롬프트 전송, 위험 명령을 걸러내는 자동승인(기본 꺼짐). 한/영 전환.
 

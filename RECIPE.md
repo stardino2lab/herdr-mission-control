@@ -1,6 +1,6 @@
 # Mission Control
 
-A right-hand panel that lists every coding agent on every machine as a one-line tree, most urgent first. Each row jumps to its agent; a row waiting on an approval dialog gets approve and deny buttons. A one-line box at the bottom sends a prompt to the chosen agent. An opt-in switch approves dialogs by itself when the whole dialog could be read and nothing in it matches a danger rule. Korean and English.
+A right-hand panel that lists every coding agent on every machine as a one-line tree, most urgent first. Each row jumps to its agent; a row waiting on an approval dialog gets approve and deny buttons. A one-line box at the bottom sends a prompt to the chosen agent. An opt-in switch approves dialogs by itself when the whole dialog could be read and nothing in it matches a danger rule. English and Korean: English by default, Korean on a Korean system, switchable.
 
 ![Mission Control](preview.png)
 
@@ -27,7 +27,7 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - **↗**: focuses the agent's pane (`pane.focus`); on a sub-agent, peeks at it (`terminal.peek`).
 - **✓ / ✗**: first checks that the terminal still waits on a dialog; if not, sends nothing and says so. ✓ presses Enter, ✗ presses Esc. One action per terminal at a time.
 - **Prompt**: Enter or ⏎ sends the line to the target with `hc send`. Line breaks and tabs become spaces; control characters are dropped. Not sent while the target waits on a dialog (it would answer the dialog).
-- **Language button**: switches every string; what was typed carries over. Saved in `shared("mission-control.lang")`.
+- **Language button**: switches every string; what was typed carries over. Saved in `shared("mission-control.lang")`. Until picked, the language follows the system locale (`Intl`): Korean for `ko*`, English otherwise.
 - **Group header**: click folds the group.
 - **Auto-approve switch**: off at every start, never saved. While on, every 2 seconds it looks at each waiting agent on reachable machines:
   1. reads the terminal's screen;
@@ -77,6 +77,6 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - With Claude Code running in a tab, its row shows with the right status as it works, waits and finishes.
 - On a waiting row, ✓ closes the dialog and the command runs; ✗ closes it and nothing runs.
 - A line typed in the prompt bar arrives in the target agent; while it waits on a dialog the line is refused with a message.
-- The language button turns every string to English and back.
+- The language button switches every string between English and Korean, and the choice survives a restart.
 - With auto-approve on: `mkdir x` is approved without a click and logged; `rm -rf x` stays waiting, is logged as held by `rm-flags`, and a toast says so.
 - Turning auto-approve off stops it at once; after a restart it is off.
