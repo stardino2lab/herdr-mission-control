@@ -4,7 +4,7 @@
 import { shared, setShared } from "herdr";
 import { STR, hasLang, pickLang, nextLang, langLabel, langName } from "./strings.js";
 
-const KEY = "mission-control.lang";
+const KEY = "control-tower.lang";
 
 // Until the person picks one: the system's language when there is a table for it, else English.
 function systemLang() {

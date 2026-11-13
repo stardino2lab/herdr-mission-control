@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseDialog, cleanLines } from "../mods/mission-control/detector.js";
-import { judge } from "../mods/mission-control/safety.js";
+import { parseDialog, cleanLines } from "../mods/control-tower/detector.js";
+import { judge } from "../mods/control-tower/safety.js";
 
 const boxed = (command) => `
 ● I'll check the repository state.

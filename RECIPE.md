@@ -1,14 +1,14 @@
-# Mission Control
+# Control Tower
 
 A right-hand panel that lists every coding agent on every machine as a one-line tree, most urgent first. Each row jumps to its agent; a row waiting on an approval dialog gets approve and deny buttons. A one-line box at the bottom sends a prompt to the chosen agent. An opt-in switch approves dialogs by itself when the whole dialog could be read and nothing in it matches a danger rule. Eight languages (English, 한국어, 日本語, 简体中文, Español, Deutsch, Français, Português): the system's language when there is a table for it, English otherwise, switchable.
 
-![Mission Control](preview.png)
+![Control Tower](preview.png)
 
 ## What you see
 
 A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left edge, 13px text. Top to bottom:
 
-- **Top bar**, 36px, 1px `border` below. Left: the title ("Mission Control"), 12px semibold; it is the part that gives way, cut with an ellipsis when the bar is too narrow. Then, only when above zero, "● N" in `blocked` and "● N" in `working`, 11px, with the words ("Needs approval 1") in the tooltip: the words are much longer in some languages, and the two buttons on the right must always fit in 320px. Right: the auto-approve switch (a 20px pill: a 7px ring and "자동승인" in `muted` while off; a filled dot, `blocked` text, `blocked` border and a 15% `blocked` fill while on), then the language button (a 20px pill reading the current language's short label: EN, 한, 日, 中, ES, DE, FR, PT).
+- **Top bar**, 36px, 1px `border` below. Left: the title ("Control Tower"), 12px semibold; it is the part that gives way, cut with an ellipsis when the bar is too narrow. Then, only when above zero, "● N" in `blocked` and "● N" in `working`, 11px, with the words ("Needs approval 1") in the tooltip: the words are much longer in some languages, and the two buttons on the right must always fit in 320px. Right: the auto-approve switch (a 20px pill: a 7px ring and "자동승인" in `muted` while off; a filled dot, `blocked` text, `blocked` border and a 15% `blocked` fill while on), then the language button (a 20px pill reading the current language's short label: EN, 한, 日, 中, ES, DE, FR, PT).
 - **List**, fills the rest and scrolls. One group per machine: this computer first, then machines by name. A group header is 28px: a fold mark (▾ / ▸), the machine's name ("이 컴퓨터" for this one), "연결 중" or "연결 끊김" when its layout is not ready (the latter in `blocked`), the group's waiting count, and its agent count. With one machine only, the header is left out. A machine with no agents shows "에이전트 없음".
 - **Agent row**, 28px, 7px corners: the program's icon (15px), its name (up to 96px), "space · tab" in `dim` 11.5px (the tab only if someone named it), the status, then buttons. A 2px left edge in `accent` marks the row the prompt goes to. The focused agent's row has the `selected` background. Rows of a machine that can't be reached are at 55% opacity.
 - **Sub-agent row**, 24px, under its parent: tree guides (`├`, `└`, `│`) in `input`, a 13px icon, its name in `muted` 12px, status, buttons.
@@ -27,7 +27,7 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 - **↗**: focuses the agent's pane (`pane.focus`); on a sub-agent, peeks at it (`terminal.peek`).
 - **✓ / ✗**: first checks that the terminal still waits on a dialog; if not, sends nothing and says so. ✓ presses Enter, ✗ presses Esc. One action per terminal at a time.
 - **Prompt**: Enter or ⏎ sends the line to the target with `hc send`. Line breaks and tabs become spaces; control characters are dropped. Not sent while the target waits on a dialog (it would answer the dialog).
-- **Language button**: steps to the next language in the list and back to the first; every string switches, and what was typed carries over. Its tooltip names the current and the next language. Saved in `shared("mission-control.lang")`. Until picked, the language follows the system locale (`Intl`): the locale's first part (`pt` of `pt-BR`) when there is a table for it, English otherwise. Key names (Enter, Esc) and the dialog's own "Yes" are never translated.
+- **Language button**: steps to the next language in the list and back to the first; every string switches, and what was typed carries over. Its tooltip names the current and the next language. Saved in `shared("control-tower.lang")`. Until picked, the language follows the system locale (`Intl`): the locale's first part (`pt` of `pt-BR`) when there is a table for it, English otherwise. Key names (Enter, Esc) and the dialog's own "Yes" are never translated.
 - **Group header**: click folds the group.
 - **Auto-approve switch**: off at every start, never saved. It is driven by Herdr's changes, not by a clock: Herdr re-renders the mod when an agent starts or stops waiting, and `render(cx)` starts the work, so nothing runs while it is off or nobody waits. While on, for each waiting agent on reachable machines:
   1. reads the terminal's screen;
@@ -40,7 +40,7 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 
 ## Built from
 
-- A mod only: `mods/mission-control/`. No layout of its own. `mod.json`: `{ "place": "right", "size": 320, "title": "Mission Control", "overlay": { "width": 380, "height": 560 } }`.
+- A mod only: `mods/control-tower/`. No layout of its own. `mod.json`: `{ "place": "right", "size": 320, "title": "Control Tower", "overlay": { "width": 380, "height": 560 } }`.
 - `main.js`: the `View`. State and wiring. No repeating timer: `render(cx)` calls `wake(cx)`, which starts an attempt (`cx.spawn`) for each waiting agent that is due.
 - `tree.js`: pure. `buildGroups(agents(), terminals(), machines())` groups by machine (the `machine/` prefix of an address), builds the sub-agent tree from `parent`, sorts by urgency.
 - `control.js`: pure. Builds `hc` argument lists (`keys -- <t> enter|esc`, `send -- <t> <text>`, `read -- <t>`), cleans a prompt, reads `hc`'s result (its JSON `{"error":{"message"}}` counts as failure).
@@ -56,7 +56,7 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 ## Watch out
 
 - **Needs herdr-core 0.1.21 or newer.** On 0.1.16 Claude Code reported no status, so no row appeared; and `hc read --lines N` on a full-screen program never returned.
-- **It does not dock itself into a shipped layout.** Clone the layout and add the block: `herdr-app do layout.clone '{"name":"main","as":"mission"}'`, then in `layouts/mission.json` add `{ "id": "mission-control", "type": "block", "size": { "px": 320 }, "min": 240, "max": 560, "content": { "mod": "mission-control" } }` as the last child of `work-body`.
+- **It does not dock itself into a shipped layout.** Clone the layout and add the block: `herdr-app do layout.clone '{"name":"main","as":"tower"}'`, then in `layouts/tower.json` add `{ "id": "control-tower", "type": "block", "size": { "px": 320 }, "min": 240, "max": 560, "content": { "mod": "control-tower" } }` as the last child of `work-body`.
 - **It presses keys in your terminals.** Tell the person before adding it: it runs `hc keys`, `hc send` and `hc read` on every agent terminal, on other machines too.
 - **Auto-approve is a filter, not a sandbox.** It can't see what a script does (`bash build.sh`, `npm run x`, `node script.js` all pass), nor anything the dialog did not show. Leave it off unless that is acceptable; the agent's own permission settings are the stronger tool.
 - **It holds harmless things too**: `cat .env`, `git branch -d`, `git add dd`. That is on purpose.
@@ -75,7 +75,7 @@ A column 320px wide (240 to 560), `chrome` background, 1px `border` on its left 
 
 ## Done when
 
-- `herdr-app check mods/mission-control` passes and `npm test` reports 67 passing.
+- `herdr-app check mods/control-tower` passes and `npm test` reports 67 passing.
 - With Claude Code running in a tab, its row shows with the right status as it works, waits and finishes.
 - On a waiting row, ✓ closes the dialog and the command runs; ✗ closes it and nothing runs.
 - A line typed in the prompt bar arrives in the target agent; while it waits on a dialog the line is refused with a message.

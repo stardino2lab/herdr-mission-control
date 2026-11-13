@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { STR, LANGS, pickLang, nextLang, langLabel, hasLang } from "../mods/mission-control/strings.js";
+import { STR, LANGS, pickLang, nextLang, langLabel, hasLang } from "../mods/control-tower/strings.js";
 
 test("strings: every language has every key, with something in it", () => {
   const keys = Object.keys(STR.en).sort();

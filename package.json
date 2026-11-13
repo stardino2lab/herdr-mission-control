@@ -1,5 +1,5 @@
 {
-  "name": "herdr-mission-control",
+  "name": "herdr-control-tower",
   "private": true,
   "type": "module",
   "scripts": {

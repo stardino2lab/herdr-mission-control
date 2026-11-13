@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildGroups, subtree, subStatus, machineOf, totals } from "../mods/mission-control/tree.js";
+import { buildGroups, subtree, subStatus, machineOf, totals } from "../mods/control-tower/tree.js";
 
 const agent = (address, status, seq = 0) => ({ address, status, seq });
 const term = (address, extra = {}) => ({ address, state: "live", ...extra });

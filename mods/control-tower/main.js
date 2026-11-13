@@ -1,4 +1,4 @@
-// Mission Control: every agent on every machine as a one-line tree, most urgent first.
+// Control Tower: every agent on every machine as a one-line tree, most urgent first.
 // Status, sub-agents, jump, approve / deny, a one-line prompt, auto-approve, Korean/English.
 
 import { View } from "gpui-kit";
@@ -32,7 +32,7 @@ function asksNow(address) {
   return terminals().find((x) => x.address === address)?.status === "blocked";
 }
 
-export default class MissionControl extends View {
+export default class ControlTower extends View {
   init(_props, cx) {
     // Off on every start, never saved: pressing keys by itself is opted into each time.
     this.auto = false;

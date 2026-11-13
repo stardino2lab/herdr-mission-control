@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { judge, firstRule, RULES } from "../mods/mission-control/safety.js";
+import { judge, firstRule, RULES } from "../mods/control-tower/safety.js";
 
 const bash = (command) => ({ found: true, complete: true, why: null, kind: "bash", command, signature: "x" });
 
@@ -175,7 +175,7 @@ const PASSED = [
   "Get-Content package.json",
   "New-Item -ItemType Directory src",
   "dir",
-  "herdr-app check mods/mission-control",
+  "herdr-app check mods/control-tower",
   "hc ls --json",
   "rm notes.tmp",
   "sed -n 1,20p README.md",

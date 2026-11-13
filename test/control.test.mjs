@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { keysFor, approveArgs, denyArgs, sendArgs, cleanPrompt, canSend, outcome, pickTarget } from "../mods/mission-control/control.js";
+import { keysFor, approveArgs, denyArgs, sendArgs, cleanPrompt, canSend, outcome, pickTarget } from "../mods/control-tower/control.js";
 
 test("approve and deny press the agent's keys, unknown apps use the default", () => {
   assert.deepEqual(approveArgs("t3", "claude-code"), ["keys", "--", "t3", "enter"]);

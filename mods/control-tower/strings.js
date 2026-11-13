@@ -57,7 +57,7 @@ export const STR = {
     "r.read-failed": "화면 읽기 실패",
   },
   en: {
-    title: "Mission Control",
+    title: "Control Tower",
     local: "This computer",
     working: "Working",
     blocked: "Needs approval",

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { attempt, RateLimit, Tracker } from "../mods/mission-control/auto.js";
+import { attempt, RateLimit, Tracker } from "../mods/control-tower/auto.js";
 
 const screen = (command) => `
 ────────────────────────────────────────
